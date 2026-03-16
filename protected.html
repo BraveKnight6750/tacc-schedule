@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Page</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="box">
+        <h2 id="greeting"></h2>
+        <input type="text" id="userInput" placeholder="Type something..." />
+        <button onclick="handleInput()">Submit</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const approvedUsers = ["alice", "bob", "charlie", "dave"];
+
+        // Guard - redirect back if accessed directly without a valid user
+        const params = new URLSearchParams(window.location.search);
+        const user = params.get("user");
+
+        if (!user || !approvedUsers.includes(user.toLowerCase())) {
+            window.location.href = "index.html";
+        } else {
+            document.getElementById("greeting").textContent = "Welcome, " + user + "!";
+        }
+
+        function handleInput() {
+            const input = document.getElementById("userInput").value.trim();
+            const message = document.getElementById("message");
+            if (!input) {
+                message.textContent = "Please enter something.";
+                message.className = "error";
+            } else {
+                message.textContent = "You entered: " + input;
+                message.className = "success";
+            }
+        }
+
+        document.getElementById("userInput").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") handleInput();
+        });
+    </script>
+</body>
+</html>
