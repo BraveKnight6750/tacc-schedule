@@ -1,0 +1,45 @@
+name: Add Event
+on:
+  workflow_dispatch:
+    inputs:
+      event_name:
+        required: true
+      start_time:
+        required: true
+      end_time:
+        required: true
+      location:
+        required: false
+      description:
+        required: false
+      user:
+        required: true
+
+jobs:
+  add_event:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install ics
+      - name: Add event
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          EVENT_NAME: ${{ github.event.inputs.event_name }}
+          START_TIME: ${{ github.event.inputs.start_time }}
+          END_TIME: ${{ github.event.inputs.end_time }}
+          LOCATION: ${{ github.event.inputs.location }}
+          DESCRIPTION: ${{ github.event.inputs.description }}
+          USER: ${{ github.event.inputs.user }}
+        run: python add_event.py
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add schedule.ics
+          git commit -m "Add event: ${{ github.event.inputs.event_name }} by ${{ github.event.inputs.user }}"
+          git push
