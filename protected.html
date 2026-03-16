@@ -1,63 +1,93 @@
-<script>
-    const approvedUsers = ["alice", "bob", "charlie", "dave"];
-    const GITHUB_TOKEN = "your_fine_grained_token_here";
-    const REPO = "BraveKnight6750/tacc-schedule";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Event</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="box">
+        <h2 id="greeting"></h2>
 
-    const params = new URLSearchParams(window.location.search);
-    const user = params.get("user");
+        <input type="text" id="eventName" placeholder="Event name" />
+        <input type="datetime-local" id="startTime" />
+        <input type="datetime-local" id="endTime" />
+        <input type="text" id="location" placeholder="Location" />
+        <input type="text" id="description" placeholder="Description (optional)" />
 
-    if (!user || !approvedUsers.includes(user.toLowerCase())) {
-        window.location.href = "index.html";
-    } else {
-        document.getElementById("greeting").textContent = "Welcome, " + user + "!";
-    }
+        <button onclick="addEvent()">Add Event</button>
+        <div id="message"></div>
+    </div>
 
-    async function addEvent() {
-        const name        = document.getElementById("eventName").value.trim();
-        const start       = document.getElementById("startTime").value;
-        const end         = document.getElementById("endTime").value;
-        const location    = document.getElementById("location").value.trim();
-        const description = document.getElementById("description").value.trim();
-        const message     = document.getElementById("message");
+    <script>
+        const approvedUsers = ["alice", "bob", "charlie", "dave"];
+        const GITHUB_TOKEN = "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";
+        const REPO = "BraveKnight6750/tacc-schedule";
 
-        if (!name || !start || !end) {
-            message.textContent = "Please fill in all required fields.";
-            message.className = "error";
-            return;
-        }
+        const params = new URLSearchParams(window.location.search);
+        const user = params.get("user");
 
-        message.textContent = "Saving...";
-        message.className = "";
-
-        const res = await fetch(
-            `https://api.github.com/repos/${REPO}/actions/workflows/add_event.yml/dispatches`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: "Bearer " + GITHUB_TOKEN,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    ref: "main",
-                    inputs: {
-                        event_name: name,
-                        start_time: start,
-                        end_time:   end,
-                        location:   location,
-                        description: description,
-                        user:       user
-                    }
-                })
-            }
-        );
-
-        if (res.status === 204) {
-            message.textContent = "Event submitted! It will appear in the calendar shortly.";
-            message.className = "success";
+        if (!user || !approvedUsers.includes(user.toLowerCase())) {
+            window.location.href = "index.html";
         } else {
-            const err = await res.json();
-            message.textContent = "Error: " + err.message;
-            message.className = "error";
+            document.getElementById("greeting").textContent = "Welcome, " + user + "!";
         }
-    }
-</script>
+
+        async function addEvent() {
+            const name        = document.getElementById("eventName").value.trim();
+            const start       = document.getElementById("startTime").value;
+            const end         = document.getElementById("endTime").value;
+            const location    = document.getElementById("location").value.trim();
+            const description = document.getElementById("description").value.trim();
+            const message     = document.getElementById("message");
+
+            if (!name || !start || !end) {
+                message.textContent = "Please fill in all required fields.";
+                message.className = "error";
+                return;
+            }
+
+            message.textContent = "Saving...";
+            message.className = "";
+
+            try {
+                const res = await fetch(
+                    `https://api.github.com/repos/${REPO}/actions/workflows/add_event.yml/dispatches`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: "Bearer " + GITHUB_TOKEN,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            ref: "main",
+                            inputs: {
+                                event_name:  name,
+                                start_time:  start,
+                                end_time:    end,
+                                location:    location,
+                                description: description,
+                                user:        user
+                            }
+                        })
+                    }
+                );
+
+                if (res.status === 204) {
+                    message.textContent = "Event submitted! It will appear in the calendar in a moment.";
+                    message.className = "success";
+                } else {
+                    const err = await res.json();
+                    message.textContent = "Error: " + err.message;
+                    message.className = "error";
+                }
+
+            } catch (err) {
+                message.textContent = "Something went wrong: " + err.message;
+                message.className = "error";
+            }
+        }
+    </script>
+</body>
+</html>
