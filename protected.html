@@ -26,4 +26,113 @@
         const REPO = "BraveKnight6750/tacc-schedule";
         const FILE_PATH = "schedule.ics";
 
-        const params = new
+        const params = new URLSearchParams(window.location.search);
+        const user = params.get("user");
+
+        if (!user || !approvedUsers.includes(user.toLowerCase())) {
+            window.location.href = "index.html";
+        } else {
+            document.getElementById("greeting").textContent = "Welcome, " + user + "!";
+        }
+
+        function formatDate(dt) {
+            return dt.replace(/[-:T]/g, "").slice(0, 15);
+        }
+
+        function makeUID() {
+            return Date.now() + "-" + Math.random().toString(36).slice(2) + "@tacc";
+        }
+
+        function buildEventBlock(name, start, end, location, description, organizer) {
+            return [
+                "BEGIN:VEVENT",
+                "UID:" + makeUID(),
+                "SUMMARY:" + name,
+                "DTSTART:" + formatDate(start),
+                "DTEND:" + formatDate(end),
+                "LOCATION:" + location,
+                "DESCRIPTION:" + description,
+                "ORGANIZER:" + organizer,
+                "END:VEVENT"
+            ].join("\r\n");
+        }
+
+        async function addEvent() {
+            const name        = document.getElementById("eventName").value.trim();
+            const start       = document.getElementById("startTime").value;
+            const end         = document.getElementById("endTime").value;
+            const location    = document.getElementById("location").value.trim();
+            const description = document.getElementById("description").value.trim();
+            const message     = document.getElementById("message");
+
+            if (!name || !start || !end) {
+                message.textContent = "Please fill in all required fields.";
+                message.className = "error";
+                return;
+            }
+
+            message.textContent = "Saving...";
+            message.className = "";
+
+            try {
+                // Get existing file from GitHub
+                const getRes = await fetch(
+                    `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`,
+                    { headers: { Authorization: "Bearer " + GITHUB_TOKEN } }
+                );
+
+                let existingContent = "";
+                let sha = null;
+
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    sha = fileData.sha;
+                    existingContent = atob(fileData.content.replace(/\n/g, ""));
+                } else {
+                    // File doesn't exist yet, start fresh
+                    existingContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR";
+                }
+
+                // Insert new event before END:VCALENDAR
+                const newEvent = buildEventBlock(name, start, end, location, description, user);
+                const updatedContent = existingContent.replace(
+                    "END:VCALENDAR",
+                    newEvent + "\r\nEND:VCALENDAR"
+                );
+
+                // Write back to GitHub
+                const body = {
+                    message: `Add event: ${name} by ${user}`,
+                    content: btoa(updatedContent),
+                    ...(sha && { sha })
+                };
+
+                const putRes = await fetch(
+                    `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            Authorization: "Bearer " + GITHUB_TOKEN,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(body)
+                    }
+                );
+
+                if (putRes.ok) {
+                    message.textContent = "Event added successfully!";
+                    message.className = "success";
+                } else {
+                    const err = await putRes.json();
+                    message.textContent = "Error: " + err.message;
+                    message.className = "error";
+                }
+
+            } catch (err) {
+                message.textContent = "Something went wrong: " + err.message;
+                message.className = "error";
+            }
+        }
+    </script>
+</body>
+</html>
