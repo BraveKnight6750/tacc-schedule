@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="box">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Enter username" />
+        <button onclick="checkUser()">Submit</button>
+        <div id="message"></div>
+    </div>
 
+    <script>
+        const approvedUsers = ["alice", "bob", "charlie", "dave"];
+
+        function checkUser() {
+            const input = document.getElementById("username").value.trim().toLowerCase();
+            const message = document.getElementById("message");
+
+            if (!input) {
+                message.textContent = "Please enter a username.";
+                message.className = "error";
+                return;
+            }
+
+            if (approvedUsers.includes(input)) {
+                message.textContent = `Welcome, ${input}!`;
+                message.className = "success";
+            } else {
+                message.textContent = "Access denied. User not recognized.";
+                message.className = "error";
+            }
+        }
+
+        document.getElementById("username").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") checkUser();
+        });
+    </script>
+</body>
+</html>
