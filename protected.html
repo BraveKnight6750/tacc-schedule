@@ -3,45 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protected Page</title>
+    <title>Add Event</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="box">
         <h2 id="greeting"></h2>
-        <input type="text" id="userInput" placeholder="Type something..." />
-        <button onclick="handleInput()">Submit</button>
+
+        <input type="text" id="eventName" placeholder="Event name" />
+        <input type="datetime-local" id="startTime" />
+        <input type="datetime-local" id="endTime" />
+        <input type="text" id="location" placeholder="Location" />
+        <input type="text" id="description" placeholder="Description (optional)" />
+
+        <button onclick="addEvent()">Add Event</button>
         <div id="message"></div>
     </div>
 
     <script>
         const approvedUsers = ["alice", "bob", "charlie", "dave"];
+        const GITHUB_TOKEN = "your_fine_grained_token_here";
+        const REPO = "BraveKnight6750/tacc-schedule";
+        const FILE_PATH = "schedule.ics";
 
-        // Guard - redirect back if accessed directly without a valid user
-        const params = new URLSearchParams(window.location.search);
-        const user = params.get("user");
-
-        if (!user || !approvedUsers.includes(user.toLowerCase())) {
-            window.location.href = "index.html";
-        } else {
-            document.getElementById("greeting").textContent = "Welcome, " + user + "!";
-        }
-
-        function handleInput() {
-            const input = document.getElementById("userInput").value.trim();
-            const message = document.getElementById("message");
-            if (!input) {
-                message.textContent = "Please enter something.";
-                message.className = "error";
-            } else {
-                message.textContent = "You entered: " + input;
-                message.className = "success";
-            }
-        }
-
-        document.getElementById("userInput").addEventListener("keydown", function(e) {
-            if (e.key === "Enter") handleInput();
-        });
-    </script>
-</body>
-</html>
+        const params = new
