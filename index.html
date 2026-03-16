@@ -28,8 +28,7 @@
             }
 
             if (approvedUsers.includes(input)) {
-                message.textContent = `Welcome, ${input}!`;
-                message.className = "success";
+                window.location.href = "protected.html?user=" + input;
             } else {
                 message.textContent = "Access denied. User not recognized.";
                 message.className = "error";
